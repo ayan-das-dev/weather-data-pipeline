@@ -1,19 +1,26 @@
 # 🌤️ Weather Data Pipeline & Dashboard
 
 ## 📌 Project Overview
-This project fetches weather data for multiple cities using an API, processes it, stores it, and visualizes it using a Streamlit dashboard.
+## 📌 Project Overview
 
+This project is an end-to-end Weather Data Pipeline and Interactive Dashboard that fetches real-time weather data using an API, processes it, and visualizes insights through an interactive Streamlit application.
+
+It supports multi-city analysis, date filtering, caching for performance optimization, and provides both graphical and tabular insights.
+
+This project demonstrates core data engineering concepts such as data ingestion, transformation, storage, logging, and visualization.
 ---
 
 ## ⚙️ Tech Stack
-- Python
-- Pandas
-- Matplotlib
-- Plotly
-- Streamlit
-- REST API (Open-Meteo)
+## ⚙️ Tech Stack
 
----
+<p align="left">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Plotly-3F4F75?style=for-the-badge&logo=plotly&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Matplotlib-11557C?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/API-Open--Meteo-green?style=for-the-badge"/>
+</p>
 
 ## 🚀 Features
 
@@ -78,7 +85,7 @@ streamlit run app.py
 ---
 
 ## 🌐 Live App
-(Will be added after deployment)
+👉 [Click here to view the app](https://weather-data-pipeline-n9hm7xhmx9kyuueusxlp7q.streamlit.app/)
 
 ---
 
