@@ -1,24 +1,29 @@
 import streamlit as st
 from datetime import datetime, timedelta
-
-# import pandas as pd
 import plotly.express as px
-
-# Import your API function
+import pandas as pd
 from scripts.weather_api import get_weather_data
 
+# -----------------------
+# Page Config
 st.set_page_config(page_title="Weather Dashboard", layout="wide")
 
-# -------------------------------
+
+# -----------------------
+# Caching
+@st.cache_data
+def fetch_data(lat, lon, start_date, end_date):
+    return get_weather_data(lat, lon, start_date, end_date)
+
+
+# -----------------------
 # Title
-st.title("🌤️ Weather Data Dashboard")
+st.title("🌤️ Weather Dashboard")
 
-# -------------------------------
-# Sidebar Inputs
+# -----------------------
+# Sidebar
+st.sidebar.header("Filters")
 
-st.sidebar.header("User Input")
-
-# City selection
 cities = {
     "Kolkata": (22.5744, 88.3629),
     "Delhi": (28.7041, 77.1025),
@@ -26,87 +31,109 @@ cities = {
     "Bangalore": (12.9716, 77.5946),
 }
 
-city = st.sidebar.selectbox("Select City", list(cities.keys()))
-lat, lon = cities[city]
+today = datetime.now().date()
+week_ago = today - timedelta(days=7)
 
-# Date selection
-start_date = st.sidebar.date_input("Start Date", datetime.now() - timedelta(days=7))
-end_date = st.sidebar.date_input("End Date", datetime.now())
-
-# -------------------------------
-# Fetch Data
+start_date = st.sidebar.date_input("Start Date", week_ago)
+end_date = st.sidebar.date_input("End Date", today)
 
 if start_date > end_date:
     st.error("Start date must be before end date")
-else:
-    with st.spinner("Fetching weather data..."):
-        df = get_weather_data(
-            lat,
-            lon,
-            start_date.strftime("%Y-%m-%d"),
-            end_date.strftime("%Y-%m-%d"),
-        )
+    st.stop()
 
-    # -------------------------------
-    # Show Data
-    st.subheader(f"Weather Data for {city}")
-    st.dataframe(df)
+# -----------------------
+# Tabs
+tab1, tab2 = st.tabs(["📊 Single City", "🌍 Multi-City Comparison"])
 
-    # -------------------------------
+# =========================================================
+# 📊 TAB 1: SINGLE CITY
+# =========================================================
+with tab1:
+    city = st.selectbox("Select City", list(cities.keys()))
+    lat, lon = cities[city]
+
+    df = fetch_data(
+        lat,
+        lon,
+        start_date.strftime("%Y-%m-%d"),
+        end_date.strftime("%Y-%m-%d"),
+    )
+
+    st.subheader(f"{city} Weather Data")
+
     # Metrics
-
-    st.subheader("📊 Summary Statistics")
-
     col1, col2, col3 = st.columns(3)
 
-    col1.metric("Avg Max Temp (°C)", round(df["max_temp"].mean(), 2))
-    col2.metric("Avg Min Temp (°C)", round(df["min_temp"].mean(), 2))
+    col1.metric("Avg Max Temp", round(df["max_temp"].mean(), 2))
+    col2.metric("Avg Min Temp", round(df["min_temp"].mean(), 2))
+    col3.metric("Max Temp", round(df["max_temp"].max(), 2))
 
-    if "rainfall" in df.columns:
-        col3.metric("Total Rainfall (mm)", round(df["rainfall"].sum(), 2))
-    else:
-        col3.metric("Total Rainfall (mm)", "N/A")
-
-    # -------------------------------
-    # Temperature Chart
-
-    st.subheader("📈 Temperature Trend")
-
+    # Chart
     fig = px.line(
         df,
         x="date",
         y=["max_temp", "min_temp"],
-        title=f"{city} Temperature Trend",
         markers=True,
+        title=f"{city} Temperature Trend",
     )
 
     st.plotly_chart(fig, width="stretch")
 
-    # -------------------------------
-    # Rainfall Chart (if available)
+    # Data
+    st.dataframe(df, width="stretch")
 
-    if "rainfall" in df.columns:
-        st.subheader("🌧️ Rainfall")
+# =========================================================
+# 🌍 TAB 2: MULTI-CITY
+# =========================================================
+with tab2:
+    selected_cities = st.multiselect(
+        "Select Cities", list(cities.keys()), default=["Kolkata", "Delhi"]
+    )
 
-        fig2 = px.bar(
-            df,
+    if selected_cities:
+        all_data = []
+
+        for city in selected_cities:
+            lat, lon = cities[city]
+
+            df = fetch_data(
+                lat,
+                lon,
+                start_date.strftime("%Y-%m-%d"),
+                end_date.strftime("%Y-%m-%d"),
+            )
+
+            df["city"] = city
+            all_data.append(df)
+
+        final_df = pd.concat(all_data)
+
+        st.subheader("📈 Temperature Comparison")
+
+        # Chart
+        fig = px.line(
+            final_df,
             x="date",
-            y="rainfall",
-            title=f"{city} Daily Rainfall",
+            y="max_temp",
+            color="city",
+            markers=True,
+            title="Max Temperature Comparison",
         )
 
-        st.plotly_chart(fig2, width="stretch")
+        st.plotly_chart(fig, width="stretch")
 
-    # -------------------------------
-    # Download CSV
+        # Summary Table
+        st.subheader("📊 Summary")
 
-    st.subheader("⬇️ Download Data")
+        summary = (
+            final_df.groupby("city")
+            .agg({"max_temp": "mean", "min_temp": "mean"})
+            .reset_index()
+        )
 
-    csv = df.to_csv(index=False).encode("utf-8")
+        summary.columns = ["City", "Avg Max Temp", "Avg Min Temp"]
 
-    st.download_button(
-        label="Download CSV",
-        data=csv,
-        file_name=f"{city}_weather.csv",
-        mime="text/csv",
-    )
+        st.dataframe(summary, width="stretch")
+
+    else:
+        st.warning("Please select at least one city")
