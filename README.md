@@ -1,7 +1,6 @@
 # 🌤️ Weather Data Pipeline & Dashboard
 
 ## 📌 Project Overview
-## 📌 Project Overview
 
 This project is an end-to-end Weather Data Pipeline and Interactive Dashboard that fetches real-time weather data using an API, processes it, and visualizes insights through an interactive Streamlit application.
 
@@ -10,7 +9,6 @@ It supports multi-city analysis, date filtering, caching for performance optimiz
 This project demonstrates core data engineering concepts such as data ingestion, transformation, storage, logging, and visualization.
 ---
 
-## ⚙️ Tech Stack
 ## ⚙️ Tech Stack
 
 <p align="left">
