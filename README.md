@@ -100,7 +100,3 @@ streamlit run app.py
 - Database integration
 - Airflow scheduling
 
----
-
-## 🙌 Author
-Ayan Das
